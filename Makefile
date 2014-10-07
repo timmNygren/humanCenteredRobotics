@@ -19,6 +19,8 @@ clean:
 	rm -rf star.dSYM/
 	rm -rf joint_displace.dSYM/
 	rm -rf trajectories.dSYM/
+
+fileClean:
 	$(RM) rad
 	$(RM) rad.t
 	$(RM) hjpd

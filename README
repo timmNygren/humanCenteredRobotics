@@ -3,6 +3,7 @@ Running this program.
 ***THIS RUNS ON UNIX ONLY FOR DIRECTORY ACCESS***
 
 First run make to build all programs, this should produce executables called star, joint_displace, and hod(**failed**)
+(Submission required final datafiles, they are already generated)
 
 To run star using default values:
 ./star dataset/train dataset/test
@@ -34,6 +35,8 @@ To run hod: ** IN THE WORKS **
 
 I have run into a problem with 'libc++abi.dylib: terminating with uncaught exception of type std::length_error: vector'
 and it occurred too close to submission for me to do a drastic overhaul to debug this error.
+
+If you want to clean the final data files, run: make fileClean
 
 ****************************** 
 **	      Evaluating        **
