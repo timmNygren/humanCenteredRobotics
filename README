@@ -1,0 +1,71 @@
+Running this program.
+
+***THIS RUNS ON UNIX ONLY FOR DIRECTORY ACCESS***
+
+First run make to build all programs, this should produce executables called star, joint_displace, and hod(**failed**)
+
+To run star using default values:
+./star dataset/train dataset/test
+
+The two parameters must be directories
+
+For further testing, there are options available that allow the user to change
+parameters of the histograms and joints used for the star skeleton. 
+
+To see the available options, run:
+
+./star
+
+
+To run hjpd using default values:
+./joint_displace dataset/train dataset/test
+
+The two parameters must be directories
+
+For further testing, there are some options available that allow the user to change
+the lower and upper bounds of the histograms, the number of bins in a histogram, and/or the
+reference joint used in calculating the position differences.
+
+To see the available options, run:
+./joint_displace
+
+
+To run hod: ** IN THE WORKS **
+
+I have run into a problem with 'libc++abi.dylib: terminating with uncaught exception of type std::length_error: vector'
+and it occurred too close to submission for me to do a drastic overhaul to debug this error.
+
+****************************** 
+**	      Evaluating        **
+******************************
+
+*** The easy.py script looks for gnuplot in /usr/local/bin/gnuplot ****
+
+Scripts provided: 
+	in /nygren-Project2-Code - move_files.sh 		(moves generated files (i.e. rad/rad.t) to libsvm/tools)
+	in libsvm-3.18/tools/	 - run_all.sh 			(run_all runs easy.py with libsvm files)
+							 - cleanDir.sh   		(cleanDir removes all variations of rad*, hjpd*, and hod*)
+							 - confusionMatrix.sh 	(generates confusion matrices given options)
+
+use the commands below to evaluate the created data files:
+
+From the root directory, nygren-Project2-Code, run the move_files.sh
+
+./move_files.sh 
+
+This will move any {rad, rad.t}, {hjpd, hjpd.t}, and {hod, hod.t} files to libsvm-3.18/tools/
+
+Then move to the tools directory in the libsvm
+
+cd libsvm-3.18/tools/
+
+Use the script run_all to run the easy python script on each pair of rad/t, hjpd/t, hod/t files
+./run_all
+
+To run each individually:
+./easy rad rad.t
+./easy hjpd hjpd.t
+
+After running the data file through the svm, you can run ./confusionMatrix.sh -a to output a
+confusion matrix for each dataset.
+
