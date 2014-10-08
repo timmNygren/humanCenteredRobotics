@@ -37,9 +37,7 @@ void write_LIBSVM(string id, vector<double> features, ofstream& output);
 
 int main(int argc, char *argv[]) 
 {
-
 	checkArgs(argc, argv);
-
 	transform_to_HOD(argv[argc-2], "hod");
 	transform_to_HOD(argv[argc-1], "hod.t");
 	return 0;

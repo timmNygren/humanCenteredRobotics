@@ -23,22 +23,17 @@ double joint_pos_diff_lower_bound = -1.10;		// Default
 double joint_pos_diff_upper_bound = 1.30;		// Default
 int joint_pos_diff_num_bins = 20;				// Default
 int referenceJoint = 0;							// Default Center of hip
-// static int testCounter = 0;
-// static double minValue = 999999.0;
-// static double nextMin;
-// static double maxValue = -10000000.0;
-// static double nextMax;
 
-void checkArgs(int argc, char *argv[]);
-bool is_real_number(const string &str);
-void exit_with_help();
-void exit_with_error(string option = "", string value = "");
-bool is_dir(const char* path);
 vector<Point3d> calc_joint_differences(const vector<Point3d> joints);
-vector<Bin> compute_histogram(int histogram_dimension, double lower, double upper, int numBins, vector<vector<Point3d> > data);
+void checkArgs(int argc, char *argv[]);
 void combine_feature_vector(vector<double>& feature, vector<Bin> input);
-void write_LIBSVM(string id, vector<double> features, ofstream& output);
+vector<Bin> compute_histogram(int histogram_dimension, double lower, double upper, int numBins, vector<vector<Point3d> > data);
+void exit_with_error(string option = "", string value = "");
+void exit_with_help();
+bool is_dir(const char* path);
+bool is_real_number(const string &str);
 void transform_to_HJPD(const char *path, const string output);
+void write_LIBSVM(string id, vector<double> features, ofstream& output);
 
 int main(int argc, char *argv[]) 
 {
@@ -46,6 +41,15 @@ int main(int argc, char *argv[])
 	transform_to_HJPD(argv[argc-2], "hjpd");
 	transform_to_HJPD(argv[argc-1], "hjpd.t");
 	return 0;
+}
+
+vector<Point3d> calc_joint_differences(const vector<Point3d> joints)
+{
+	vector<Point3d> tempDifferences;
+	for (int i = 0; i < joints.size(); i++)
+		if (i != referenceJoint)
+			tempDifferences.push_back(joints[referenceJoint].difference(joints[i]));
+	return tempDifferences;
 }
 
 void checkArgs(int argc, char *argv[])
@@ -103,47 +107,11 @@ void checkArgs(int argc, char *argv[])
 	}
 }
 
-bool is_real_number(const string &str)
+// Combine all normalized distance and angles from the histogram into a feature vector
+void combine_feature_vector(vector<double>& feature, vector<Bin> input)
 {
-	return str.find_first_not_of("0123456789.-") == string::npos;
-}
-
-void exit_with_help() 
-{
-	cout << "\nUsage: joint_displace [options] <train_dir> <test_dir> \n";
-	cout << "Options:\n";
-	cout << "\t-l <#>: histogram lower bound (default " << joint_pos_diff_lower_bound << ")\n";
-	cout << "\t-u <#>: histogram upper bound (default " << joint_pos_diff_upper_bound << ")\n";
-	cout << "\t-b <#>: number of histogram bins (default " << joint_pos_diff_num_bins << ")\n";
-	cout << "\t-r [0-19]: Reference joint to use (default 0, or center of hip)**See skeleton joint names and indices from Kinect SDK**\n";
-	cout << "\nMake sure train_dir is the first, otherwise\n";
-	cout << "The output hjpd file will contain incorrect data\n\n";
-	exit(1);
-}
-
-void exit_with_error(string option, string value)
-{
-	string valueOrPath = (option.compare("dir") == 0) ? "path" : "value"; 
-	cout << "\n***Error handling parameter: " << option << " with " + valueOrPath + ": " << value << endl;
-	if (option.compare("-r") == 0)
-		cout << "Reference Joint must be be a digit [0-19]\n";
-	exit_with_help();
-}
-
-bool is_dir(const char* path)
-{
-	struct stat buffer;
-	stat(path, &buffer);
-	return S_ISDIR(buffer.st_mode);
-}
-
-vector<Point3d> calc_joint_differences(const vector<Point3d> joints)
-{
-	vector<Point3d> tempDifferences;
-	for (int i = 0; i < joints.size(); i++)
-		if (i != referenceJoint)
-			tempDifferences.push_back(joints[referenceJoint].difference(joints[i]));
-	return tempDifferences;
+	for (int i = 0; i < input.size(); i++)
+		feature.push_back(input[i].getFreq());
 }
 
 vector<Bin> compute_histogram(int histogram_dimension, double lower, double upper, int numBins, vector<vector<Point3d> > data)
@@ -158,25 +126,6 @@ vector<Bin> compute_histogram(int histogram_dimension, double lower, double uppe
 		lower += interval;
 	}
 
-	// cout << "Testing data in compute_histogram: " << endl;
-	// for (int i = 0; i < data.size(); i++)
-	// {
-	// 	for (int j = 0; j < TOTAL_NUM_JOINT_DIFFERENCES; j++)
-	// 	{
-	// 		if (data[i][j].getDimension(histogram_dimension) < minValue)
-	// 		{
-	// 			// cout << "min value change to: " << data[i][j].getDimension(histogram_dimension) << endl;
-	// 			nextMin = minValue;
-	// 			minValue = data[i][j].getDimension(histogram_dimension);
-	// 		}
-	// 		if (data[i][j].getDimension(histogram_dimension) > maxValue)
-	// 		{
-	// 			nextMax = maxValue;
-	// 			maxValue = data[i][j].getDimension(histogram_dimension);
-	// 		}
-	// 		// cout << "\t Frame: " << i << ", Joint: " << j << ", dimension: " << histogram_dimension << ",.... value: " << data[i][j].getDimension(histogram_dimension) << endl;
-	// 	}
-	// }
 	for (int i = 0; i < data.size(); i++)						// T frames
 	{
 		for (int j = 0; j < TOTAL_NUM_JOINT_DIFFERENCES; j++)	// 1,...,19 deltas
@@ -198,22 +147,38 @@ vector<Bin> compute_histogram(int histogram_dimension, double lower, double uppe
 	return histogram;
 }
 
-// Combine all normalized distance and angles from the histogram into a feature vector
-void combine_feature_vector(vector<double>& feature, vector<Bin> input)
+void exit_with_error(string option, string value)
 {
-	for (int i = 0; i < input.size(); i++)
-		feature.push_back(input[i].getFreq());
+	string valueOrPath = (option.compare("dir") == 0) ? "path" : "value"; 
+	cout << "\n***Error handling parameter: " << option << " with " + valueOrPath + ": " << value << endl;
+	if (option.compare("-r") == 0)
+		cout << "Reference Joint must be be a digit [0-19]\n";
+	exit_with_help();
 }
 
-// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
-void write_LIBSVM(string id, vector<double> features, ofstream& output)
+void exit_with_help() 
 {
-	output << stoi(id);
-	for (int i = 0; i < features.size(); i++)
-	{
-		output << " " << i+1 << ":" << features[i]; 
-	}
-	output << "\n";
+	cout << "\nUsage: joint_displace [options] <train_dir> <test_dir> \n";
+	cout << "Options:\n";
+	cout << "\t-l <#>: histogram lower bound (default " << joint_pos_diff_lower_bound << ")\n";
+	cout << "\t-u <#>: histogram upper bound (default " << joint_pos_diff_upper_bound << ")\n";
+	cout << "\t-b <#>: number of histogram bins (default " << joint_pos_diff_num_bins << ")\n";
+	cout << "\t-r [0-19]: Reference joint to use (default 0, or center of hip)**See skeleton joint names and indices from Kinect SDK**\n";
+	cout << "\nMake sure train_dir is the first, otherwise\n";
+	cout << "The output hjpd file will contain incorrect data\n\n";
+	exit(1);
+}
+
+bool is_dir(const char* path)
+{
+	struct stat buffer;
+	stat(path, &buffer);
+	return S_ISDIR(buffer.st_mode);
+}
+
+bool is_real_number(const string &str)
+{
+	return str.find_first_not_of("0123456789.-") == string::npos;
 }
 
 // Transform the data from RAD to LIBSVM format
@@ -259,7 +224,7 @@ void transform_to_HJPD(const char *path, const string output)
 		}
 		// for frame t = 1, ... ,T
 		// Set up needed variables
-		vector<Point3d> jointVector;					// Holds joints 1,...,20 for each frame
+		vector<Point3d> jointVector;				// Holds joints 1,...,20 for each frame
 		vector<vector<Point3d> > jointDifferences;	// Holds all frame jd1,...,jd19 for all joint distance calculations
 		int invalidFrame = -1;						// Identifies which frame is invalide (NaN data)
 
@@ -284,21 +249,13 @@ void transform_to_HJPD(const char *path, const string output)
 			if (joint == MAX_JOINTS) 
 			{
 				// Calculate joint differences
-				// if (testCounter == 0)
-				// 	cout << "File: " << string(file->d_name) << endl;
 				jointDifferences.push_back(calc_joint_differences(jointVector));
 				// Reset joint vector for next frame
 				jointVector.clear();
 			}
 		}
-		// file done
-		// create historgrams
+		// file done, create histograms
 		vector<vector<Bin> > jointDiffHists;
-		// if (testCounter == 0)
-		// {
-		// 	cout << "Size of jointDifferences vector: " << jointDifferences.size() << endl;
-		// 	testCounter++;
-		// }
 
 		// Compute Histograms and place in histogram vector
 		jointDiffHists.push_back(compute_histogram(DELTA_X, joint_pos_diff_lower_bound, joint_pos_diff_upper_bound, joint_pos_diff_num_bins, jointDifferences));
@@ -316,7 +273,16 @@ void transform_to_HJPD(const char *path, const string output)
 		inputFile.close();
 	} // End looping through directory
 	outputFile.close();
-	// cout << "Min value: " << minValue << ", next min: " << nextMin << endl; 
-	// cout << "Max value: " << maxValue << ", next max: " << nextMax << endl;
 	closedir(direct);
 } // End transform_to_HJPD
+
+// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
+void write_LIBSVM(string id, vector<double> features, ofstream& output)
+{
+	output << stoi(id);
+	for (int i = 0; i < features.size(); i++)
+	{
+		output << " " << i+1 << ":" << features[i]; 
+	}
+	output << "\n";
+}
