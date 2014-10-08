@@ -33,7 +33,7 @@ double Bin::getFreq()
 	return freq;
 }
 
-int Bin::getBinSize()
+double Bin::getBinSize()
 {
 	return numInBin;
 }

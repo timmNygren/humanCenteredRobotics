@@ -15,7 +15,7 @@ class Bin
 	void normalize(double size);
 	bool valueInBin(double data);
 	double getFreq();
-	int getBinSize();
+	double getBinSize();
 };
 
 std::ostream& operator<<(std::ostream& out, const Bin& b);
