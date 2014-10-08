@@ -5,7 +5,6 @@
 #include <dirent.h>
 #include <vector>
 #include <cmath>
-#include <ctype.h>
 #include <sys/stat.h>
 #include "point3d.h"
 #include "bin.h"

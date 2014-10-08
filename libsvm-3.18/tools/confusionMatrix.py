@@ -68,7 +68,7 @@ for mfile in matrixOrder:
 			confusionMtx[test][predict] += 1
 		# Output Confusion matrix
 		print('\nPrinting confusion matrix for {0}'.format(mfile))
-		print('{0:4s} {1:3s} {2:3s} {3:3s} {4:3s} {5:3s} {6:3s}'.format("   ", " 8", "10", "12", "13", "15", "16"))
+		print('{0:4s} {1:3s} {2:3s} {3:3s} {4:3s} {5:3s} {6:3s}'.format("   ", "8", "10", "12", "13", "15", "16"))
 		for act in activities:
 			print('{0:3s} {1:3d} {2:3d} {3:3d} {4:3d} {5:3d} {6:3d}'.format(act, confusionMtx[act]["8"], confusionMtx[act]["10"],\
 					confusionMtx[act]["12"], confusionMtx[act]["13"], confusionMtx[act]["15"], confusionMtx[act]["16"]))

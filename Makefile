@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS = -Wall -g
 
-all: star joint_displace
+all: star joint_displace trajectories
 
 star: rad.cpp point3d.cpp bin.cpp
 	${CXX} ${CFLAGS} rad.cpp point3d.cpp bin.cpp -o star
@@ -25,3 +25,5 @@ fileClean:
 	$(RM) rad.t
 	$(RM) hjpd
 	$(RM) hjpd.t
+	$(RM) hod
+	$(RM) hod.t

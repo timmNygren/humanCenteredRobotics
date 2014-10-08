@@ -31,10 +31,10 @@ To see the available options, run:
 ./joint_displace
 
 
-To run hod: ** IN THE WORKS **
+To run hod:
+./trajectories dataset/train/ dataset/test/
 
-I have run into a problem with 'libc++abi.dylib: terminating with uncaught exception of type std::length_error: vector'
-and it occurred too close to submission for me to do a drastic overhaul to debug this error.
+
 
 If you want to clean the final data files, run: make fileClean
 
@@ -68,7 +68,9 @@ Use the script run_all to run the easy python script on each pair of rad/t, hjpd
 To run each individually:
 ./easy rad rad.t
 ./easy hjpd hjpd.t
+./easy hod hod.t
 
-After running the data file through the svm, you can run ./confusionMatrix.sh -a to output a
-confusion matrix for each dataset.
+After running the data file through the svm, you can run ./confusionMatrix.py -a to output a
+confusion matrix for each dataset. You can also run ./confusionMatrix.py without args to view
+other options to run a confusion matrix individually.
 

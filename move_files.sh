@@ -12,3 +12,8 @@ if [ -e $hjpdfile ]; then
 	cp hjpd libsvm-3.18/tools/hjpd
 	cp hjpd.t libsvm-3.18/tools/hjpd.t
 fi
+
+if [ -e $hodfile ]; then
+	cp hod libsvm-3.18/tools/hod
+	cp hod.t libsvm-3.18/tools/hod.t
+fi
