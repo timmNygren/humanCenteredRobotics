@@ -20,25 +20,20 @@ const int Y_DIM = 1;
 const int Z_DIM = 2;
 
 /* User defined vars */
-int hod_num_bins = 4;
-// static int testCounter = 0;
-// static double minValue = 999999.0;
-// static double nextMin;
-// static double maxValue = -10000000.0;
-// static double nextMax;
+int hod_num_bins = 8;
 
 void checkArgs(int argc, char *argv[]);
-void exit_with_help();
-void exit_with_error(string option = "", string value = "");
-bool is_dir(const char* path);
+void combine_feature_vector(vector<double>& feature, vector<double>input);
+void combine_2D_to_3D_trajectory(vector<double>& feature, vector<Bin> input);
 vector<Bin> compute_histogram(int jointStart, int inc, double lower, double upper, int numBins, vector<Point2d> data);
 vector<double> create_3D_trajectory(vector<Point2d> xyTraject, vector<Point2d> yzTraject, vector<Point2d> xzTraject);
-vector<Bin> temporal_pyramid(vector<Point2d> trajectory2D);
+void exit_with_error(string option = "", string value = "");
+void exit_with_help();
+bool is_dir(const char* path);
 void sumBins(vector<Bin>& sum, vector<Bin> input);
-void combine_2D_to_3D_trajectory(vector<double>& feature, vector<Bin> input);
-void combine_feature_vector(vector<double>& feature, vector<double>input);
-void write_LIBSVM(string id, vector<double> features, ofstream& output);
+vector<Bin> temporal_pyramid(vector<Point2d> trajectory2D);
 void transform_to_HOD(const char *path, const string output);
+void write_LIBSVM(string id, vector<double> features, ofstream& output);
 
 int main(int argc, char *argv[]) 
 {
@@ -82,30 +77,18 @@ void checkArgs(int argc, char *argv[])
 	}
 }
 
-void exit_with_help() 
+// Combine all normalized distance and angles from the histogram into a feature vector
+void combine_feature_vector(vector<double>& feature, vector<double> input)
 {
-	cout << "Usage: hod train_dir test_dir \n";
-	cout << "Options:\n";
-	cout << "\t-b <#>: number of bins used in HOD\n";
-	cout << "Make sure train_dir is the first, otherwise\n";
-	cout << "The output hod file will contain incorrect data\n";
-	exit(1);
+	for (int i = 0; i < input.size(); i++)
+		feature.push_back(input[i]);
 }
 
-void exit_with_error(string option, string value)
+// Combine all normalized distance and angles from the histogram into a feature vector
+void combine_2D_to_3D_trajectory(vector<double>& feature, vector<Bin> input)
 {
-	string valueOrPath = (option.compare("dir") == 0) ? "path" : "value"; 
-	cout << "\n***Error handling parameter: " << option << " with " + valueOrPath + ": " << value << endl;
-	if (option.compare("-r") == 0)
-		cout << "Reference Joint must be be a digit [0-19]\n";
-	exit_with_help();
-}
-
-bool is_dir(const char* path)
-{
-	struct stat buffer;
-	stat(path, &buffer);
-	return S_ISDIR(buffer.st_mode);
+	for (int i = 0; i < input.size(); i++)
+		feature.push_back(input[i].getFreq());
 }
 
 vector<Bin> compute_histogram(int jointStart, int inc, double lower, double upper, int numBins, vector<Point2d> data)
@@ -149,15 +132,61 @@ vector<double> create_3D_trajectory(vector<Point2d> xyTraject, vector<Point2d> y
 	HOD2d.push_back(temporal_pyramid(xyTraject));
 	HOD2d.push_back(temporal_pyramid(yzTraject));
 	HOD2d.push_back(temporal_pyramid(xzTraject));
-	// vector<Bin> xyHOD = temporal_pyramid(xyTraject);
-	// vector<Bin> yzHOD = temporal_pyramid(yzTraject);
-	// vector<Bin> xzHOD = temporal_pyramid(xzTraject);
 
 	vector<double> trajectory3D;
 	for (int i = 0; i < HOD2d.size(); i++)
 		combine_2D_to_3D_trajectory(trajectory3D, HOD2d[i]);
 
 	return trajectory3D;
+}
+
+void exit_with_error(string option, string value)
+{
+	string valueOrPath = (option.compare("dir") == 0) ? "path" : "value"; 
+	cout << "\n***Error handling parameter: " << option << " with " + valueOrPath + ": " << value << endl;
+	if (option.compare("-r") == 0)
+		cout << "Reference Joint must be be a digit [0-19]\n";
+	exit_with_help();
+}
+
+void exit_with_help() 
+{
+	cout << "\nUsage: hod train_dir test_dir \n";
+	cout << "Options:\n";
+	cout << "\t-b <#>: number of bins used in HOD (default " << hod_num_bins << ")\n";
+	cout << "Make sure train_dir is the first, otherwise\n";
+	cout << "The output hod file will contain incorrect data\n\n";
+	exit(1);
+}
+
+bool is_dir(const char* path)
+{
+	struct stat buffer;
+	stat(path, &buffer);
+	return S_ISDIR(buffer.st_mode);
+}
+
+void sumBins(vector<Bin>& sum, vector<Bin> input)
+{
+	// If sum is not initialized
+	if (sum.size() == 0)
+	{
+		double upper = HOD_UPPER_BOUND * hod_num_bins / 360;
+		double lower = HOD_LOWER_BOUND * hod_num_bins / 360;
+		double interval = (upper - lower) / hod_num_bins;
+
+		// // Initialize histogram of numBins
+		for (int i = 0; i < hod_num_bins; i++)
+		{
+			sum.push_back(Bin(lower, interval));
+			lower += interval;
+		}
+	}
+	// add input bins to corresponding sum bins
+	for(int i = 0; i < sum.size(); i++)
+	{
+		sum[i].addToBin(input[i].getBinSize());
+	}
 }
 
 vector<Bin> temporal_pyramid(vector<Point2d> trajectory2D)
@@ -173,83 +202,15 @@ vector<Bin> temporal_pyramid(vector<Point2d> trajectory2D)
 	sumBins(summedBin, compute_histogram(1, 4, HOD_LOWER_BOUND, HOD_UPPER_BOUND, hod_num_bins, trajectory2D)); // Third Level RL
 	sumBins(summedBin, compute_histogram(3, 4, HOD_LOWER_BOUND, HOD_UPPER_BOUND, hod_num_bins, trajectory2D)); // Third Level RR
 
-	// Normalize by total distances in bin
+	// Get total distance by summing all bin values
 	double totalDistanceSize = 0;
 	for (int i = 0; i < summedBin.size(); i++)
 		totalDistanceSize += summedBin[i].getBinSize();
-
+	// Normalize by total bin values
 	for (int i = 0; i < summedBin.size(); i++)
 		summedBin[i].normalize(totalDistanceSize);
 
-	// if (testCounter == 0)
-	// {
-	// 	cout << "Summed bins:\n";
-	// 	for (int i = 0; i < summedBin.size(); i++)
-	// 		cout << summedBin[i] << endl;
-	// 	testCounter++;
-	// }
 	return summedBin;
-}
-
-void sumBins(vector<Bin>& sum, vector<Bin> input)
-{
-	if (sum.size() == 0)
-	{
-		double upper = HOD_UPPER_BOUND * hod_num_bins / 360;
-		double lower = HOD_LOWER_BOUND * hod_num_bins / 360;
-		double interval = (upper - lower) / hod_num_bins;
-
-		// // Initialize histogram of numBins
-		for (int i = 0; i < hod_num_bins; i++)
-		{
-			sum.push_back(Bin(lower, interval));
-			lower += interval;
-		}
-	}
-
-	// if (testCounter < 7)
-	// {
-	// 	cout << "\nTesting input: " << endl;
-	// 	for (int i = 0; i < input.size(); i++)
-	// 		cout << input[i] << endl;
-	// 	testCounter++;
-	// }
-
-	for(int i = 0; i < sum.size(); i++)
-	{
-		sum[i].addToBin(input[i].getBinSize());
-	}
-	// if (testCounter == 7)
-	// {
-	// 	cout << "Testing summed bin inside:\n";
-	// 	for (int i = 0; i < sum.size(); i++)
-	// 		cout << sum[i] << endl;
-	// }
-}
-
-// Combine all normalized distance and angles from the histogram into a feature vector
-void combine_2D_to_3D_trajectory(vector<double>& feature, vector<Bin> input)
-{
-	for (int i = 0; i < input.size(); i++)
-		feature.push_back(input[i].getFreq());
-}
-
-// Combine all normalized distance and angles from the histogram into a feature vector
-void combine_feature_vector(vector<double>& feature, vector<double> input)
-{
-	for (int i = 0; i < input.size(); i++)
-		feature.push_back(input[i]);
-}
-
-// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
-void write_LIBSVM(string id, vector<double> features, ofstream& output)
-{
-	output << stoi(id);
-	for (int i = 0; i < features.size(); i++)
-	{
-		output << " " << i+1 << ":" << features[i]; 
-	}
-	output << "\n";
 }
 
 // Transform the data from RAD to LIBSVM format
@@ -276,10 +237,9 @@ void transform_to_HOD(const char *path, const string output)
 		cerr << "Error opening file: " << output << endl;
 		exit(1);
 	}
-
+	// Hold all points as 3D points
 	vector<Point3d> allPoints;
 	// Read through each file
-	// For each instance in Train and Test
 	while ( (file = readdir(direct)) ) 
 	{
 		// Skip current and previous directory file names
@@ -295,11 +255,7 @@ void transform_to_HOD(const char *path, const string output)
 			exit(1);
 		}
 
-		// Set up needed variables
-		// vector<Point2d> joint2dTrajectory;				// Holds the three 2d trajectories (xy, yz, xz) for a joint
-
 		int invalidFrame = -1;							// Identifies which frame is invalide (NaN data)
-		int totalFrames = 0;
 		// Read from the file
 		while(inputFile >> frame >> joint >> xpos >> ypos >> zpos) 
 		{
@@ -316,71 +272,61 @@ void transform_to_HOD(const char *path, const string output)
 				continue;
 
 			allPoints.push_back(Point3d(xpos, ypos, zpos));
-			// Done reading in all joints of a single frame
-			// if (joint == MAX_JOINTS) 
-			// {
-				// frames.push_back(jointVector);
-				// jointVector.clear();
-			// }
-			totalFrames = frame;
 		}
 		// file done
-		// cout << "Total frames: " << totalFrames << endl;
-		// cout << "Total points = frames * 20: " << allPoints.size() << endl;
-
+		// Create vectors to hold all joints of specified 2D planes
 		vector<vector<Point2d> > allJointsXY(MAX_JOINTS);
 		vector<vector<Point2d> > allJointsYZ(MAX_JOINTS);
 		vector<vector<Point2d> > allJointsXZ(MAX_JOINTS);
+
+		vector<Point2d> xypoints;
+		vector<Point2d> yzpoints;
+		vector<Point2d> xzpoints;
 		// create historgrams
 		for (int i = 0; i < MAX_JOINTS; i++)
 		{
-			// int frame = 1;
-			// cout << "Joint: " << i << " with points: " << endl; 
-			vector<Point2d> xypoints;
-			vector<Point2d> yzpoints;
-			vector<Point2d> xzpoints;
 			for (int j = i; j < allPoints.size(); j+=MAX_JOINTS)
 			{
-				// cout << "\tFrame: " << frame << " " << allPoints[j] << endl;
 				xypoints.push_back(Point2d(allPoints[j].getDimension(X_DIM), allPoints[j].getDimension(Y_DIM)));
 				yzpoints.push_back(Point2d(allPoints[j].getDimension(Y_DIM), allPoints[j].getDimension(Z_DIM)));
 				xzpoints.push_back(Point2d(allPoints[j].getDimension(X_DIM), allPoints[j].getDimension(Z_DIM)));
-				frame++;
 			}
 			allJointsXY[i] = xypoints;
 			allJointsYZ[i] = yzpoints;
 			allJointsXZ[i] = xzpoints;
 			xypoints.clear();
+			yzpoints.clear();
+			xzpoints.clear();
 		}
 
-		// for (int i = 0; i < allJointsXY.size(); i++)
-		// {
-		// 	cout << "Point: " << i << " with xy values: " << endl;
-		// 	for(int j = 0; j < totalFrames; j++)
-		// 	{
-		// 		cout << "\t" << allJointsXY[i][j] << endl;
-		// 	}
-		// }
-		vector<vector<double> > allPoint3DTrajectories(MAX_JOINTS);
-		// vector<double> featureVector;
-
 		// 3D trajectory is the concatination of {HOD_XY_Point_i, HOD_YZ_Point_i, HOD_XZ_Point_i}
+		vector<vector<double> > allPoint3DTrajectories(MAX_JOINTS);
 		for (int i = 0; i < MAX_JOINTS; i++)
 			allPoint3DTrajectories.push_back( create_3D_trajectory(allJointsXY[i], allJointsYZ[i], allJointsXZ[i]) );
 
-		vector<double> featureVector;
 		// // Add all histograms into feature vector
+		vector<double> featureVector;
 		for (int i = 0; i < allPoint3DTrajectories.size(); i++)
 			combine_feature_vector(featureVector, allPoint3DTrajectories[i]);
 
 		write_LIBSVM(string(file->d_name).substr(1,2), featureVector, outputFile);
-		// featureVector.clear();
+
 		allPoints.clear();
 		inputFile.close();
 	} // End looping through directory
 	
 	outputFile.close();
-	// cout << "Min value: " << minValue << ", next min: " << nextMin << endl; 
-	// cout << "Max value: " << maxValue << ", next max: " << nextMax << endl;
 	closedir(direct);
 } // End transform_to_HOD
+
+
+// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
+void write_LIBSVM(string id, vector<double> features, ofstream& output)
+{
+	output << stoi(id);
+	for (int i = 0; i < features.size(); i++)
+	{
+		output << " " << i+1 << ":" << features[i]; 
+	}
+	output << "\n";
+}

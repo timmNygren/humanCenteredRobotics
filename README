@@ -6,7 +6,7 @@ First run make to build all programs, this should produce executables called sta
 (Submission required final datafiles, they are already generated)
 
 To run star using default values:
-./star dataset/train dataset/test
+./star dataset/train/ dataset/test/
 
 The two parameters must be directories
 
@@ -19,7 +19,7 @@ To see the available options, run:
 
 
 To run hjpd using default values:
-./joint_displace dataset/train dataset/test
+./joint_displace dataset/train/ dataset/test/
 
 The two parameters must be directories
 
@@ -33,6 +33,9 @@ To see the available options, run:
 
 To run hod:
 ./trajectories dataset/train/ dataset/test/
+
+One option is available with hod. You can specify the number of bins using:
+./trajectories -b <#> dataset/train/ dataset/test/
 
 
 
