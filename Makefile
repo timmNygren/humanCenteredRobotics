@@ -10,7 +10,7 @@ joint_displace: hjpd.cpp point3d.cpp bin.cpp
 	${CXX} ${CFLAGS} hjpd.cpp point3d.cpp bin.cpp -o joint_displace
 
 trajectories: hod.cpp point2d.cpp bin.cpp
-	${CXX} ${CFLAGS} hod.cpp point2d.cpp bin.cpp -o trajectories
+	${CXX} ${CFLAGS} hod.cpp point2d.cpp point3d.cpp bin.cpp -o trajectories
 
 clean:
 	$(RM) star
