@@ -29,31 +29,46 @@ int rightArmJoint = 7;				// Joint of star skeleton, can be either 6 for wrist o
 int leftLegJoint = 19;				// Joint of star skeleton, can be either 18 for ankle or 19 for foot (default)
 int rightLegJoint = 15;				// Joint of star skeleton, can be either 14 for ankle or 15 for foot (default)
 
-// static double minValue = 999999.0;
-// static double nextMin;
-// static double maxValue = -10000000.0;
-// static double nextMax;
-
-void checkArgs(int argc, char *argv[]);
-bool is_real_number(const string &str);
-void exit_with_help();
-void exit_with_error(string option = "", string value = "");
-bool is_dir(const char* path);
-vector<double> calc_distances(const vector<Point3d> joints);
 vector<double> calc_angles(const vector<Point3d> joints);
-vector<Bin> compute_histogram(int histogram_i, vector<vector<double> > data, int type);
+vector<double> calc_distances(const vector<Point3d> joints);
+void checkArgs(int argc, char *argv[]);
 void combine_feature_vector(vector<double>& feature, vector<Bin> input);
-void write_LIBSVM(string id, vector<double> features, ofstream& output);
+vector<Bin> compute_histogram(int histogram_i, vector<vector<double> > data, int type);
+void exit_with_error(string option = "", string value = "");
+void exit_with_help();
+bool is_dir(const char* path);
+bool is_real_number(const string &str);
 void transform_to_RAD(const char *path, const string output);
+void write_LIBSVM(string id, vector<double> features, ofstream& output);
 
 int main(int argc, char *argv[]) 
 {
-
 	checkArgs(argc, argv);
-
 	transform_to_RAD(argv[argc-2], "rad");
 	transform_to_RAD(argv[argc-1], "rad.t");
 	return 0;
+}
+
+vector<double> calc_angles(const vector<Point3d> joints)
+{
+	vector<double> temp;
+	temp.push_back(joints[CENTROID].angle(joints[HEAD], joints[leftArmJoint]));				// theta1
+	temp.push_back(joints[CENTROID].angle(joints[HEAD], joints[rightArmJoint]));			// theta2
+	temp.push_back(joints[CENTROID].angle(joints[rightArmJoint], joints[rightLegJoint]));	// theta3
+	temp.push_back(joints[CENTROID].angle(joints[leftArmJoint], joints[leftLegJoint]));		// theta4
+	temp.push_back(joints[CENTROID].angle(joints[rightLegJoint], joints[leftLegJoint]));	// theta5
+	return temp;
+}
+
+vector<double> calc_distances(const vector<Point3d> joints)
+{
+	vector<double> temp;
+	temp.push_back(joints[CENTROID].distance(joints[HEAD]));				// d1
+	temp.push_back(joints[CENTROID].distance(joints[leftArmJoint]));		// d2
+	temp.push_back(joints[CENTROID].distance(joints[leftLegJoint]));		// d3
+	temp.push_back(joints[CENTROID].distance(joints[rightArmJoint]));		// d4
+	temp.push_back(joints[CENTROID].distance(joints[rightLegJoint]));		// d5
+	return temp;
 }
 
 void checkArgs(int argc, char *argv[])
@@ -159,9 +174,43 @@ void checkArgs(int argc, char *argv[])
 	}
 }
 
-bool is_real_number(const string &str)
+// Combine all normalized distance and angles from the histogram into a feature vector
+void combine_feature_vector(vector<double>& feature, vector<Bin> input)
 {
-	return str.find_first_not_of("0123456789.-") == string::npos;
+	for (int i = 0; i < input.size(); i++)
+		feature.push_back(input[i].getFreq());
+}
+
+vector<Bin> compute_histogram(int histogram_i, double lower, double upper, int numBins, vector<vector<double> > data)
+{
+	double interval = (upper - lower) / numBins;
+	vector<Bin> histogram;
+
+	// Initialize histogram of numBins
+	for (int i = 0; i < numBins; i++)
+	{
+		histogram.push_back(Bin(lower, interval));
+		lower += interval;
+	}
+
+	// Go through each data value and put it in a bin
+	for (int i = 0; i < data.size(); i++)
+	{
+		for (int j = 0; j < histogram.size(); j++)
+		{
+			if (histogram[j].valueInBin(data[i][histogram_i]))
+			{
+				histogram[j].addToBin();
+				break;
+			}
+
+		}
+	}
+	// Normalize the histogram bins by the number of valid frames
+	for (int j = 0; j < histogram.size(); j++)
+		histogram[j].normalize(data.size());
+
+	return histogram;
 }
 
 void exit_with_help() 
@@ -200,88 +249,9 @@ bool is_dir(const char* path)
 	return S_ISDIR(buffer.st_mode);
 }
 
-vector<double> calc_distances(const vector<Point3d> joints)
+bool is_real_number(const string &str)
 {
-	vector<double> temp;
-	temp.push_back(joints[CENTROID].distance(joints[HEAD]));				// d1
-	temp.push_back(joints[CENTROID].distance(joints[leftArmJoint]));		// d2
-	temp.push_back(joints[CENTROID].distance(joints[leftLegJoint]));		// d3
-	temp.push_back(joints[CENTROID].distance(joints[rightArmJoint]));		// d4
-	temp.push_back(joints[CENTROID].distance(joints[rightLegJoint]));		// d5
-	return temp;
-}
-
-vector<double> calc_angles(const vector<Point3d> joints)
-{
-	vector<double> temp;
-	temp.push_back(joints[CENTROID].angle(joints[HEAD], joints[leftArmJoint]));				// theta1
-	temp.push_back(joints[CENTROID].angle(joints[HEAD], joints[rightArmJoint]));			// theta2
-	temp.push_back(joints[CENTROID].angle(joints[rightArmJoint], joints[rightLegJoint]));	// theta3
-	temp.push_back(joints[CENTROID].angle(joints[leftArmJoint], joints[leftLegJoint]));		// theta4
-	temp.push_back(joints[CENTROID].angle(joints[rightLegJoint], joints[leftLegJoint]));	// theta5
-	return temp;
-}
-
-vector<Bin> compute_histogram(int histogram_i, double lower, double upper, int numBins, vector<vector<double> > data)
-{
-	double interval = (upper - lower) / numBins;
-	vector<Bin> histogram;
-
-	// Initialize histogram of numBins
-	for (int i = 0; i < numBins; i++)
-	{
-		histogram.push_back(Bin(lower, interval));
-		lower += interval;
-	}
-
-	// Go through each data value and put it in a bin
-	for (int i = 0; i < data.size(); i++)
-	{
-		// if (data[i][histogram_i] < minValue)
-		// {
-		// 	// cout << "min value change to: " << data[i][j].getDimension(histogram_dimension) << endl;
-		// 	nextMin = minValue;
-		// 	minValue = data[i][histogram_i];
-		// }
-		// if (data[i][histogram_i] > maxValue)
-		// {
-		// 	nextMax = maxValue;
-		// 	maxValue = data[i][histogram_i];
-		// }
-
-		for (int j = 0; j < histogram.size(); j++)
-		{
-			if (histogram[j].valueInBin(data[i][histogram_i]))
-			{
-				histogram[j].addToBin();
-				break;
-			}
-
-		}
-	}
-	// Normalize the histogram bins by the number of valid frames
-	for (int j = 0; j < histogram.size(); j++)
-		histogram[j].normalize(data.size());
-
-	return histogram;
-}
-
-// Combine all normalized distance and angles from the histogram into a feature vector
-void combine_feature_vector(vector<double>& feature, vector<Bin> input)
-{
-	for (int i = 0; i < input.size(); i++)
-		feature.push_back(input[i].getFreq());
-}
-
-// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
-void write_LIBSVM(string id, vector<double> features, ofstream& output)
-{
-	output << stoi(id);
-	for (int i = 0; i < features.size(); i++)
-	{
-		output << " " << i+1 << ":" << features[i]; 
-	}
-	output << "\n";
+	return str.find_first_not_of("0123456789.-") == string::npos;
 }
 
 // Transform the data from RAD to LIBSVM format
@@ -361,8 +331,7 @@ void transform_to_RAD(const char *path, const string output)
 				jointVector.clear();
 			}
 		}
-		// file done
-		// create historgrams
+		// file done, create histograms
 		vector<vector<Bin> > distanceHists;						// Contains d1,..,d5 histograms
 		vector<vector<Bin> > angleHists;						// Constains theta1,..,theta5 histograms
 
@@ -387,3 +356,15 @@ void transform_to_RAD(const char *path, const string output)
 	outputFile.close();
 	closedir(direct);
 } // End transform_to_RAD
+
+// writes the data in LIBSVM format using the activity category (i.e. a08 -> id = 08)
+void write_LIBSVM(string id, vector<double> features, ofstream& output)
+{
+	output << stoi(id);
+	for (int i = 0; i < features.size(); i++)
+	{
+		output << " " << i+1 << ":" << features[i]; 
+	}
+	output << "\n";
+}
+
