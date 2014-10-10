@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# BLOCK COMMENT
+: <<'END'
+END
+
 easyfi () {
 	./move_files.sh
 	cd $1
@@ -87,19 +91,20 @@ done
 # Changing lower and upper bound, same rate of change
 for i in `seq 0.00 0.05 0.55`;
 do
-	lower=0.00+$i
-	upper=2.20-$i
-	echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
-	./$radFileName -dl $lower -du $upper $dtrain $dtest
-	easyfi "$tools" "rad" 
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "2.20-$i")
+	echo "Lower (${lower}) and upper (${upper})"
+	# echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
+	# ./$radFileName -dl $lower -du $upper $dtrain $dtest
+	# easyfi "$tools" "rad" 
 done
 
 # Changing lower and upper bound, same rate of change
 # Bin changing at each lower/upper change
 for i in `seq 0.00 0.05 0.55`;
 do
-	lower=0.00+$i
-	upper=2.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "2.20-$i")
 	for bins in `seq 5 5 50`;
 	do
 		echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05 and bins (${bins})" >> radOutput.txt
@@ -135,8 +140,8 @@ done
 # Lower/Upper changes with Wrists & Ankles
 for i in `seq 0.00 0.05 0.55`;
 do
-	lower=0.00+$i
-	upper=2.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "2.20-$i")
 	echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05. wrists/ankles" >> radOutput.txt
 	./$radFileName -dl $lower -du $upper -la 10 -ll 18 -ra 6 -rl 14 $dtrain $dtest
 	easyfi "$tools" "rad" 
@@ -145,8 +150,8 @@ done
 # Lower/Upper/Bin changes with Wrists & Ankles
 for i in `seq 0.00 0.05 0.55`;
 do
-	lower=0.00+$i
-	upper=2.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "2.20-$i")
 	for bins in `seq 5 5 50`;
 	do
 		echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05 and bins (${bins}). wrists/ankles" >> radOutput.txt
@@ -184,8 +189,8 @@ done
 # Changing lower and upper bound, same rate of change
 for i in `seq 0.00 0.05 0.8`;
 do
-	lower=0.00+$i
-	upper=3.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "3.20-$i")
 	echo "Rad with angle lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
 	./$radFileName -al $lower -au $upper $dtrain $dtest
 	easyfi "$tools" "rad" 
@@ -195,8 +200,8 @@ done
 # Bin changing at each lower/upper change
 for i in `seq 0.00 0.05 0.8`;
 do
-	lower=0.00+$i
-	upper=3.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "3.20-$i")
 	for bins in `seq 5 5 50`;
 	do
 		echo "Rad with angle lower (${lower}) and upper (${upper}) changing constant 0.05 and bins (${bins})" >> radOutput.txt
@@ -232,8 +237,8 @@ done
 # Lower/Upper changes with Wrists & Ankles
 for i in `seq 0.00 0.05 0.8`;
 do
-	lower=0.00+$i
-	upper=3.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "3.20-$i")
 	echo "Rad with angle lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
 	./$radFileName -al $lower -au $upper -la 10 -ll 18 -ra 6 -rl 14 $dtrain $dtest
 	easyfi "$tools" "rad" 
@@ -242,8 +247,8 @@ done
 # Lower/Upper/Bin changes with Wrists & Ankles
 for i in `seq 0.00 0.05 0.8`;
 do
-	lower=0.00+$i
-	upper=3.20-$i
+	lower=$(bc -l <<< "0.00+$i")
+	upper=$(bc -l <<< "3.20-$i")
 	for bins in `seq 5 5 50`;
 	do
 		echo "Rad with angle lower (${lower}) and upper (${upper}) changing constant 0.05 and bins (${bins})" >> radOutput.txt
@@ -292,8 +297,8 @@ done
 # Changing lower and upper bound, same rate of change
 for i in `seq 0.00 0.05 0.6`;
 do
-	lower=-1.10+$i
-	upper=1.30-$i
+	lower=$(bc -l <<< "-1.10+$i")
+	upper=$(bc -l <<< "1.30-$i")
 	echo "Hjpd with angle lower (${lower}) and upper (${upper}) changing constant 0.05" >> hjpdOutput.txt
 	./$hjpdFileName -l $lower -u $upper $dtrain $dtest
 	easyfi "$tools" "hjpd" 
@@ -303,8 +308,8 @@ done
 # Bin changing at each lower/upper change
 for i in `seq 0.00 0.05 0.6`;
 do
-	lower=-1.10+$i
-	upper=1.30-$i
+	lower=$(bc -l <<< "-1.10+$i")
+	upper=$(bc -l <<< "1.30-$i")
 	for bins in `seq 5 5 50`;
 	do
 		echo "Hjpd with angle lower (${lower}) and upper (${upper}) changing constant 0.05 and bins (${bins})" >> hjpdOutput.txt
@@ -326,8 +331,8 @@ done
 # Reference Joint changing
 for i in `seq 0.00 0.05 0.6`;
 do
-	lower=-1.10+$i
-	upper=1.30-$i
+	lower=$(bc -l <<< "-1.10+$i")
+	upper=$(bc -l <<< "1.30-$i")
 	for bins in `seq 5 5 50`;
 	do
 		for refJoint in `seq 0 20`;

@@ -27,3 +27,4 @@ fileClean:
 	$(RM) hjpd.t
 	$(RM) hod
 	$(RM) hod.t
+	$(RM) *Output.txt
