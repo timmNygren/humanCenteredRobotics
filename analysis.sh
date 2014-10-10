@@ -92,11 +92,10 @@ done
 for i in `seq 0.00 0.05 0.55`;
 do
 	lower=$(bc -l <<< "0.00+$i")
-	upper=$(bc -l <<< "2.20-$i")
-	echo "Lower (${lower}) and upper (${upper})"
-	# echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
-	# ./$radFileName -dl $lower -du $upper $dtrain $dtest
-	# easyfi "$tools" "rad" 
+	upper=$(bc -l <<< "2.20-$i"
+	echo "Rad with distance lower (${lower}) and upper (${upper}) changing constant 0.05" >> radOutput.txt
+	./$radFileName -dl $lower -du $upper $dtrain $dtest
+	easyfi "$tools" "rad" 
 done
 
 # Changing lower and upper bound, same rate of change
@@ -319,7 +318,7 @@ do
 done
 
 # Change reference Joint
-for refJoint in `seq 0 20`;
+for refJoint in `seq 0 1 19`;
 do
 	echo "Hjpd with different reference joint (${refJoint})." >> hjpdOutput.txt
 	./$hjpdFileName -r refJoint $dtrain $dtest
@@ -335,7 +334,7 @@ do
 	upper=$(bc -l <<< "1.30-$i")
 	for bins in `seq 5 5 50`;
 	do
-		for refJoint in `seq 0 20`;
+		for refJoint in `seq 0 19`;
 		do
 			echo "Hjpd with angle lower (${lower}) and upper (${upper}) changing constant 0.05, bins (${bins}) and refJoint (${refJoint})" >> hjpdOutput.txt
 			./$hjpdFileName -l $lower -u $upper -b $bins -r $refJoint $dtrain $dtest
