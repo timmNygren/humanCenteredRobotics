@@ -1,0 +1,14 @@
+rad
+hjpd
+hod
+*.t
+star*
+joint_displace*
+trajectories*
+*.aux
+*.pdf
+*.log
+*.synctex.gz
+libsvm-3.18/tools/rad*
+libsvm-3.18/tools/hjpd*
+libsvm-3.18/tools/hod*
