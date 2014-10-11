@@ -12,6 +12,14 @@ easyfi () {
 	cd -
 }
 
+easyfifine () {
+	./move_files.sh
+	cd $1
+	./easy.py $2 $2.t >> ../../$2FineOutput.txt
+	echo "" >> ../../$2FineOutput.txt
+	cd -
+}
+
 radFileName="star"
 hjpdFileName="joint_displace"
 hodFileName="trajectories"
@@ -36,14 +44,15 @@ if [[ ! -x "$hodFileName" ]]
 	exit 1
 fi
 
-echo "" > radOutput.txt
-echo "" > hjpdOutput.txt
-echo "" > hodOutput.txt
+# echo "" > radOutput.txt
+# echo "" > hjpdOutput.txt
+echo "" > hjpdFineOutput.txt
+# echo "" > hodOutput.txt
 
 #################################################
 ###				Rad File Tests                ###
 #################################################
-
+: <<'END'
 # Default
 echo "Rad with default values" >> radOutput.txt
 ./$radFileName $dtrain $dtest
@@ -255,7 +264,7 @@ do
 		easyfi "$tools" "rad" 
 	done
 done
-
+END
 #################################################
 ###			Rad File Test Complete            ###
 #################################################
@@ -263,7 +272,7 @@ done
 #################################################
 ###				Hjpd File Tests   		      ###
 #################################################
-
+: <<'END'
 # Default
 echo "Hjpd with default values" >> hjpdOutput.txt
 ./$hjpdFileName $dtrain $dtest
@@ -321,7 +330,7 @@ done
 for refJoint in `seq 0 1 19`;
 do
 	echo "Hjpd with different reference joint (${refJoint})." >> hjpdOutput.txt
-	./$hjpdFileName -r refJoint $dtrain $dtest
+	./$hjpdFileName -r $refJoint $dtrain $dtest
 	easyfi "$tools" "hjpd"
 done
 
@@ -342,7 +351,7 @@ do
 		done
 	done
 done
-
+END
 #################################################
 ###			Hjpd File Tests Complete          ###
 #################################################
@@ -351,7 +360,7 @@ done
 #################################################
 ###				Hod File Tests 	  	          ###
 #################################################
-
+: <<'END'
 # Default
 echo "Hod with default values" >> hodOutput.txt
 ./$hodFileName $dtrain $dtest
@@ -364,7 +373,59 @@ do
 	./$hodFileName -b $bins $dtrain $dtest
 	easyfi "$tools" "hod" 
 done
-
+END
 #################################################
 ###			Hod File Tests Complete	  	      ###
 #################################################
+
+
+# Finer testing below for HJPD
+
+: <<'END'
+# Changing lower and upper bound, same rate of change
+# Bin changing at each lower/upper change
+# Reference Joint only 0 or 1
+for i in `seq -0.05 0.01 0.05`;
+do
+	i=`echo ${i} | sed -e 's/[eE]+*/\\*10\\^/'`
+	if (( $(bc <<< "$i == 3.46945*10^-18") == 1 )); then
+		i=0
+	fi
+	lower=$(bc <<< "-0.55 + $i")
+	upper=$(bc <<< "0.75 - $i")
+	# echo "lower=${lower}, upper=${upper}"
+	# echo $i
+	for bins in `seq -2 1 2`;
+	do
+		numBins=$((10 + $bins))
+		echo "Hjpd with angle lower (${lower}) and upper (${upper}) changing constant 0.05, bins (${numBins}) and refJoint (0)" >> hjpdFineOutput.txt
+		./$hjpdFileName -l $lower -u $upper -b $numBins -r 0 $dtrain $dtest
+		easyfifine "$tools" "hjpd" 
+
+		echo "Hjpd with angle lower (${lower}) and upper (${upper}) changing constant 0.05, bins (${numBins}) and refJoint (1)" >> hjpdFineOutput.txt
+		./$hjpdFileName -l $lower -u $upper -b $numBins -r 1 $dtrain $dtest
+		easyfifine "$tools" "hjpd" 
+	done
+done
+
+lower=-0.85
+upper=0.85
+echo "-l -0.85 -u 0.85 -b 10 -r 1" >> hjpdFineOutput.txt
+./$hjpdFileName -l $lower -u $upper -b 10 -r 1 $dtrain $dtest
+easyfifine "$tools" "hjpd"
+lower=-0.65
+upper=0.85
+echo "-l -0.65 -u 0.85 -b 10 -r 1" >> hjpdFineOutput.txt
+./$hjpdFileName -l $lower -u $upper -b 10 -r 1 $dtrain $dtest
+easyfifine "$tools" "hjpd"
+lower=-0.85
+upper=1.05
+echo "-l -0.85 -u 1.05 -b 10 -r 1" >> hjpdFineOutput.txt
+./$hjpdFileName -l $lower -u $upper -b 10 -r 1 $dtrain $dtest
+easyfifine "$tools" "hjpd"
+lower=-0.85
+upper=0.7
+echo "-l -0.85 -u 0.7 -b 10 -r 1" >> hjpdFineOutput.txt
+./$hjpdFileName -l $lower -u $upper -b 10 -r 1 $dtrain $dtest
+easyfifine "$tools" "hjpd"
+END
