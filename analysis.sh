@@ -44,11 +44,12 @@ if [[ ! -x "$hodFileName" ]]
 	exit 1
 fi
 
-# echo "" > radOutput.txt
-# echo "" > hjpdOutput.txt
-# echo "" > hjpdFineOutput.txt
-# echo "" > hodOutput.txt
-
+: <<'END'
+echo "" > radOutput.txt
+echo "" > hjpdOutput.txt
+echo "" > hjpdFineOutput.txt
+echo "" > hodOutput.txt
+END
 #################################################
 ###				Rad File Tests                ###
 #################################################

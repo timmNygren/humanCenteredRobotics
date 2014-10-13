@@ -19,7 +19,7 @@ To see the available options, run:
 
 
 To run hjpd using default values:
-./joint_displace dataset/train/ dataset/test/
+./joint_displace dataset/train/ dataset/test/g
 
 The two parameters must be directories
 
@@ -47,8 +47,17 @@ If you want to clean the final data files, run: make fileClean
 
 *** The easy.py script looks for gnuplot in /usr/local/bin/gnuplot ****
 
+** 
+	The analysis.sh script was used to evaluate performance based on the options used. If you decide to run
+	this script, make sure to remove all comment blocks ( : <<'END' #code END).
+	*** WARNING: This script will need several hours to run. ***
+	There are files in the outputBackups/ directory with all *.bak files being the original output from
+	the analysis script. All files that do not have a .bak extension have had data filtered out.
+**
+
 Scripts provided: 
 	in /nygren-Project2-Code - move_files.sh 		(moves generated files (i.e. rad/rad.t) to libsvm/tools)
+							 - analysis.sh 			(runs many analysis tests using the three programs)
 	in libsvm-3.18/tools/	 - run_all.sh 			(run_all runs easy.py with libsvm files)
 							 - cleanDir.sh   		(cleanDir removes all variations of rad*, hjpd*, and hod*)
 							 - confusionMatrix.sh 	(generates confusion matrices given options)
