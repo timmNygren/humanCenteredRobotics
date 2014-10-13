@@ -18,16 +18,16 @@ const int CENTROID = 0;						// Center of hip
 const int HEAD = 3;
 
 /* User definable */
-double distance_lower_bound = 0.00;
-double distance_upper_bound = 2.20;
-int distance_num_bins = 50;
-double angle_lower_bound = 0.00;
-double angle_upper_bound = 3.20;
-int angle_num_bins = 20;
-int leftArmJoint = 11;				// Joint of star skeleton, can be either 10 for wrist or 11 for hand (default)
-int rightArmJoint = 7;				// Joint of star skeleton, can be either 6 for wrist or 7 for hand (default)
-int leftLegJoint = 19;				// Joint of star skeleton, can be either 18 for ankle or 19 for foot (default)
-int rightLegJoint = 15;				// Joint of star skeleton, can be either 14 for ankle or 15 for foot (default)
+double distance_lower_bound = 0.45;
+double distance_upper_bound = 1.95;
+int distance_num_bins = 10;
+double angle_lower_bound = 0.1;
+double angle_upper_bound = 2.15;
+int angle_num_bins = 40;
+int leftArmJoint = 10;				// Joint of star skeleton, can be either 10 for wrist or 11 for hand (default)
+int rightArmJoint = 6;				// Joint of star skeleton, can be either 6 for wrist or 7 for hand (default)
+int leftLegJoint = 18;				// Joint of star skeleton, can be either 18 for ankle or 19 for foot (default)
+int rightLegJoint = 14;				// Joint of star skeleton, can be either 14 for ankle or 15 for foot (default)
 
 vector<double> calc_angles(const vector<Point3d> joints);
 vector<double> calc_distances(const vector<Point3d> joints);

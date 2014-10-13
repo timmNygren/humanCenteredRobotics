@@ -46,7 +46,7 @@ fi
 
 # echo "" > radOutput.txt
 # echo "" > hjpdOutput.txt
-echo "" > hjpdFineOutput.txt
+# echo "" > hjpdFineOutput.txt
 # echo "" > hodOutput.txt
 
 #################################################
@@ -362,14 +362,14 @@ END
 #################################################
 : <<'END'
 # Default
-echo "Hod with default values" >> hodOutput.txt
+echo "Hod with default values 1 level pyramid" >> hodOutput.txt
 ./$hodFileName $dtrain $dtest
 easyfi "$tools" "hod"
 
 # Changing Bins
-for bins in `seq 4 2 16`;
+for bins in `seq 4 1 16`;
 do
-	echo "Hod with changing bins (${bins})" >> hodOutput.txt
+	echo "Hod with changing bins (${bins}) 1 level pyramid" >> hodOutput.txt
 	./$hodFileName -b $bins $dtrain $dtest
 	easyfi "$tools" "hod" 
 done

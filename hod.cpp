@@ -20,7 +20,7 @@ const int Y_DIM = 1;
 const int Z_DIM = 2;
 
 /* User defined vars */
-int hod_num_bins = 8;
+int hod_num_bins = 10;
 
 void checkArgs(int argc, char *argv[]);
 void combine_feature_vector(vector<double>& feature, vector<double>input);
@@ -285,10 +285,14 @@ void transform_to_HOD(const char *path, const string output)
 		{
 			for (int j = i; j < allPoints.size(); j+=MAX_JOINTS)
 			{
+				// Add all xy, yz, xz points for each point 0,...,19
 				xypoints.push_back(Point2d(allPoints[j].getDimension(X_DIM), allPoints[j].getDimension(Y_DIM)));
 				yzpoints.push_back(Point2d(allPoints[j].getDimension(Y_DIM), allPoints[j].getDimension(Z_DIM)));
 				xzpoints.push_back(Point2d(allPoints[j].getDimension(X_DIM), allPoints[j].getDimension(Z_DIM)));
 			}
+			// allJoints*[] will contains all xy, yz and xz points for point i
+			// e.g., If i == 0, allJointsXY[0], allJointsYZ[0], and allJointsXZ[0] will contain all frame xy,yx,xz points
+			// for the center of the hip
 			allJointsXY[i] = xypoints;
 			allJointsYZ[i] = yzpoints;
 			allJointsXZ[i] = xzpoints;

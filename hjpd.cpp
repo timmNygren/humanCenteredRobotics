@@ -19,10 +19,10 @@ const int DELTA_Y = 1;
 const int DELTA_Z = 2;
 
 /* User definable */
-double joint_pos_diff_lower_bound = -1.10;		// Default
-double joint_pos_diff_upper_bound = 1.30;		// Default
-int joint_pos_diff_num_bins = 20;				// Default
-int referenceJoint = 0;							// Default Center of hip
+double joint_pos_diff_lower_bound = -0.55;		// Default
+double joint_pos_diff_upper_bound = 0.75;		// Default
+int joint_pos_diff_num_bins = 10;				// Default
+int referenceJoint = 1;							// Default Center of hip
 
 vector<Point3d> calc_joint_differences(const vector<Point3d> joints);
 void checkArgs(int argc, char *argv[]);
