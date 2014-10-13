@@ -183,7 +183,7 @@ HJPD had more interesting results. The first few experiments of lower only, uppe
 
 The HOD implementation is a great skeleton-based representation as the lower accuracy was 72\% for bin sizes of 8 and 9. Bin sizes with the best accuracies were 10, 11, and 15 at 91\% accuracy. Compared to RAD and HJPD, HOD is the best of the three skeleton-based representation due to the fact that it can have at lease one customizable parameter and still perform with 90+\% accuracy. There was little work for a high accuracy from HOD. When compared to RAD, which one could modify at least ten different parameters, RAD required many experiments for a small increase in accuracy up to only 60\%. HJPD faired much better than RAD and almost hit a 90\% accuracy after tuning only four different parameters.
 
-Another interest was to test loose and fine grid search to find a better C,gamma pair for better accuracy. Using a C$\pm$2 and gamma$\pm$2 for a fine grid search on the best accuracy runs for RAD, HJPD, and HOD, there were better C,gamma pairs found using grid with higher cross-validation rates. When using these finer tuned C's and gammas, they resulted in lower accuracies. Only HOD fine grid search did not change the accuracy when using the finer C,gamma pair. See the appendix for loose and fine grid search graphs for RAD, HJPD, and HOD. Using the fine grid search for RAD, it turns out that accuracy fell 4\%. Similar to RAD, using the finer grid search C,gamma resulted in an accuracy loss of 10\%. Compared to both RAD and HJPD fine grid searches, the fine grid C,gamma pair did not affect HOD, which resulted in a 91\% accuracy, same as the coarse C,gamma pair. As mentioned in \cite{guide}, their support vector guide, the fine grid search approach works well with datasets of thousands or more points. This could be the reason that a fine grid search gave C,gamma pairs that performed more poorly than a loose grid search. The data used in the project does not contain enough data points for fine grid search to improve accuracy of any of the three skeleton-based implementations.
+Another interest was to test loose and fine grid search to find a better C,gamma pair for better accuracy. Using a C$\pm$2 and gamma$\pm$2 for a fine grid search on the best accuracy runs for RAD, HJPD, and HOD, there were better C,gamma pairs found using grid with higher cross-validation rates. When using these finer tuned C's and gammas, they resulted in lower accuracies. Only HOD fine grid search did not change the accuracy when using the finer C,gamma pair. See the appendix for loose and fine grid search graphs for RAD, HJPD, and HOD. Using the fine grid search for RAD, it turns out that accuracy fell 4\%. When using the C,gamma pair from the finer grid search on HJPD, this resulted in an accuracy loss of 10\%. Compared to both RAD and HJPD fine grid searches, the fine grid C,gamma pair did not affect HOD, which resulted in a 91\% accuracy, same as the coarse C,gamma pair. As mentioned in \cite{guide}, their support vector guide, the fine grid search approach works well with datasets of thousands or more points. This could be the reason that a fine grid search gave C,gamma pairs that performed more poorly than a loose grid search. The data used in the project does not contain enough data points for fine grid search to improve accuracy of any of the three skeleton-based implementations.
 
 \section{Discussion}
 
@@ -197,7 +197,7 @@ As mentioned earlier, HJPD can produce some unusually high accuracies using join
 
 % The bibliography should be embedded for final submission.
 
-\begin{thebibliography}{}
+\begin{thebibliography}
 \softraggedright
 
 \bibitem[Hsu et~al.(2010)Hsu, Chih-Wei]{guide}
@@ -222,23 +222,23 @@ H. Zhang, "CSCI498B/598B Human-Centered Robotics Project 2: Skeleton-Based Repre
 	\includegraphics[width=0.55\textwidth]{coarseGridRad}
 	\caption{RAD: Loose Grid search on C = $2^-5,...,2^15$ and $\gamma=2^-15,...,2^3$.}
 	\label{fig:looseRad}
+\end{figure}
+\begin{figure}[p]
 	\includegraphics[width=0.55\textwidth]{fineGridRad}
 	\caption{RAD: Fine Grid search on C = $2^-1,...,2^3$ and $\gamma=2^-7,...,2^3$.}
 	\label{fig:fineRad}
-\end{figure}
-\begin{figure}[p]
-	\centering
 	\includegraphics[width=0.55\textwidth]{coarseGridHjpd}
 	\caption{HJPD: Loose Grid search on C = $2^-5,...,2^15$ and $\gamma=2^-15,...,2^3$.}
 	\label{fig:looseHjpd}
-	\includegraphics[width=0.55\textwidth]{fineGridHjpd}
+	\includegraphics[width=0.5\textwidth]{fineGridHjpd}
 	\caption{HJPD: Fine Grid search on C = $2^-1,...,2^3$ and $\gamma=2^-3,...,2^1$.}
 	\label{fig:fineHjpd}
-	\includegraphics[width=0.5\textwidth]{coarseGridHod}
+\end{figure}
+\begin{figure}[p]
+	\centering
+	\includegraphics[width=0.55\textwidth]{coarseGridHod}
 	\caption{HOD: Loose Grid search on C = $2^-5,...,2^15$ and $\gamma=2^-15,...,2^3$.}
 	\label{fig:looseHod}
-\end{figure}
-\begin{figure}[t]
 	\centering
 	\includegraphics[width=0.55\textwidth]{fineGridHod}
 	\caption{HOD: Fine Grid search on C = $2^1,...,2^5$ and $\gamma=2^-9,...,2^-5$.}
